@@ -10,4 +10,16 @@
 
 #Terraform
 
+# This is an EC2 instance in US East 1.
+
+# Include a provider, varaiable and resource block
+
+# Provider block - allows TF to interact with AWS
+
+# Variable block - allow us to name instance upon deploy
+
+# Resource block - ubuntu ami and will be run on a t2.micro. Will use variable in our tag
+
+# Both instances have same config except EC2 name
+
 #Ansible
