@@ -1,17 +1,17 @@
 provider "aws" {
-    region = "use-east-1"
+  region = "us-east-1"
 }
 
 variable "name" {
-    description = "name description on deploy"
+  description = "name description on deploy"
 }
 
 resource "aws_instance" "FS_ec2_web" {
-    ami = "ami-08c40ec9ead489470"
-    instance_type = "t2.micro"
-    key_name = "devops-1"
+  ami           = "ami-08c40ec9ead489470"
+  instance_type = "t2.micro"
+  key_name      = "devops-1"
 
-    tags = {
-        Name = "${var.name}"
-    }
+  tags = {
+    Name = "${var.name}"
+  }
 }
