@@ -9,5 +9,16 @@
 #Jenkins
 
 #Terraform
+#This is an EC2 instance in US East 1.
+#Include a provider, varaiable and resource block
+#Provider block - allows TF to interact with AWS
+#Variable block - allow us to name instance upon deploy
+#Resource block - ubuntu ami and will be run on a t2.micro. Will use variable in our tag
+#Both instances have same config except EC2 name
 
 #Ansible
+
+#Python
+#Falcon is a lightweight python framework that we will use in tandem with gunicorn to serve it. I'm using a variant of the falcon tutorial on their main site.
+#Dependencies needed: falcon==2.0.0
+gunicorn==19.9.0
