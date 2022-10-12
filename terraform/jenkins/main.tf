@@ -1,17 +1,98 @@
-provider "aws" {
-    region = "use-east-1"
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "${var.name}-vpc"
+  }
 }
 
-variable "name" {
-    description = "name description on deploy"
+resource "aws_subnet" "this_subnet" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "us-east-1a"
+
+
+  tags = {
+    Name = "${var.name}-subnet"
+  }
 }
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.name}-igw"
+  }
+}
+resource "aws_route_table" "this_route_table" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.name}-rt"
+  }
+}
+
+resource "aws_route" "this_route" {
+  route_table_id         = aws_route_table.this_route_table.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.igw.id
+}
+
+resource "aws_route_table_association" "this_rta" {
+  subnet_id      = aws_subnet.this_subnet.id
+  route_table_id = aws_route_table.this_route_table.id
+}
+
+resource "aws_security_group" "this_sg" {
+  name        = "Allow this_sg traffic"
+  description = "Allow this_sg inbound traffic"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  ingress {
+    description = "ssh access"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.name}-sg"
+  }
+}
+
+resource "aws_key_pair" "this_key_pair" {
+  key_name   = "jenkins"
+  public_key = file("~/.ssh/jenkins.pub")
+}
+
+
 
 resource "aws_instance" "FS_ec2_jenkins" {
-    ami = "ami-08c40ec9ead489470"
-    instance_type = "t2.micro"
-    key_name = "devops-1"
+  ami           = data.aws_ami.this_ami.id
+  instance_type = "t2.micro"
+  key_name = aws_key_pair.this_key_pair.id
+  vpc_security_group_ids = [aws_security_group.this_sg.id]
+  subnet_id = aws_subnet.this_subnet.id
 
-    tags = {
-        Name = "${var.name}"
-    }
+  tags = {
+    Name = "${var.name}"
+  }
 }
